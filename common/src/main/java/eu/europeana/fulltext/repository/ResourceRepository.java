@@ -6,9 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import static dev.morphia.query.experimental.filters.Filters.eq;
-import static eu.europeana.fulltext.util.MorphiaUtils.Fields.DATASET_ID;
-import static eu.europeana.fulltext.util.MorphiaUtils.Fields.DOC_ID;
-import static eu.europeana.fulltext.util.MorphiaUtils.Fields.LOCAL_ID;
+import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
 import static eu.europeana.fulltext.util.MorphiaUtils.MULTI_DELETE_OPTS;
 
 
@@ -34,7 +32,7 @@ public class ResourceRepository {
                 .filter(
                         eq(DATASET_ID, datasetId),
                         eq(LOCAL_ID, localId),
-                        eq(DOC_ID, resId))
+                        eq(RES_ID, resId))
                 .count() > 0;
     }
 
@@ -57,7 +55,7 @@ public class ResourceRepository {
                 .filter(
                         eq(DATASET_ID, datasetId),
                         eq(LOCAL_ID, localId),
-                        eq(DOC_ID, resId))
+                        eq(RES_ID, resId))
                 .first();
     }
 

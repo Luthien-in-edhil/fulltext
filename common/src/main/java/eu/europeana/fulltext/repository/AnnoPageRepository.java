@@ -1,9 +1,12 @@
 package eu.europeana.fulltext.repository;
 
+import com.mongodb.client.model.Filters;
 import dev.morphia.Datastore;
+import dev.morphia.UpdateOptions;
 import dev.morphia.aggregation.experimental.Aggregation;
 import dev.morphia.aggregation.experimental.expressions.ArrayExpressions;
 import dev.morphia.aggregation.experimental.stages.Projection;
+import dev.morphia.query.experimental.updates.UpdateOperators;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.entity.AnnoPage;
@@ -203,4 +206,29 @@ public class AnnoPageRepository {
                         )
         );
     }
+
+    public void setLangAndOrigin(String datasetId){
+
+        MorphiaCursor<AnnoPage> addLangAndOrigin = datastore.
+
+        datastore
+                .find(AnnoPage.class)
+                .update(UpdateOperators.set("lang", "Fairmont Chateau Laurier"))
+                .execute(new UpdateOptions()
+                                 .multi(true));
+    }
+
+    public MorphiaCursor<AnnoPage> findByDatasetNoLang(String datasetId) {
+        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class).match(
+                eq(DATASET_ID, datasetId),
+                filter(Filters.exists("lang"))
+                field("lang").$exists()
+                eq(LOCAL_ID, localId),
+                in(IMAGE_ID, imageIds)
+                                                                               );
+        query = filterTextGranularity(query, annoTypes);
+        return query.execute(AnnoPage.class);
+    }
+
+
 }

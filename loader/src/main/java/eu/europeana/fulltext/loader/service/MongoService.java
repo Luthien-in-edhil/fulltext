@@ -123,5 +123,45 @@ public class MongoService {
         return annoPageRepository.deleteDataset(datasetId);
     }
 
+    /**
+     * Adds the following fields to the AnnoPage collection (name can be overridden):
+     * - String lang (default ON, switch OFF by adding &lang=false) - initial value fetched from Resource
+     * - Boolean orig (default OFF, switch ON by adding &orig=true) - initial value = true
+     * The value of the lang field is initiated with the value of the lang field of the associated Resource document.
+     * <p>:-)</p>
+     * @param  datasetId (String, required) identifier of the dataset, to break up the batch job in more manageable portions
+     * @param  addLang (boolean, required) set to 'false' to suppress creating the lang field
+     * @param  addOrig (boolean, required) set to 'true' to enable creating the orig field (set to 'true')
+     * @return string describing processing results
+     */
+    public String addMultiLangFields(String datasetId, Boolean addLang, Boolean addOrig) {
+        if (addLang && addOrig){
+            annoPageRepository.setLangAndOrigin(dataSetId);
+        }
+
+
+        return "finished";
+    }
+
+    /**
+     * Adds the following fields to the AnnoPage collection (name can be overridden):
+     * - String lang (default ON, switch OFF by adding &lang=false) - initial value fetched from Resource
+     * - Boolean orig (default OFF, switch ON by adding &orig=true) - initial value = true
+     * The value of the lang field is initiated with the value of the lang field of the associated Resource document.
+     * <p>:-)</p>
+     * @param  datasetId (String, required) identifier of the dataset, to break up the batch job in more manageable portions
+     * @param  addLang (boolean, required) set to 'false' to suppress creating the lang field
+     * @param  addOrig (boolean, required) set to 'true' to enable creating the orig field (set to 'true')
+     * @param  collection (String, optional) name of the collection (defaults to 'AnnoPage')
+     * @return string describing processing results
+     */
+    public String addMultiLangFields(String datasetId, Boolean addLang, Boolean addOrig, String collection) {
+        if (addLang && addOrig){
+            annoPageRepository.setLangAndOrigin(dataSetId);
+        }
+
+
+        return "finished";
+    }
 
 }

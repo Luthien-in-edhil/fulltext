@@ -25,6 +25,8 @@ public class AnnoPage {
     private String           lcId;
     private String           pgId;
     private String           tgtId;
+    private String           lang;
+    private Boolean          orig;
     private List<Annotation> ans;
     private Date             modified = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
 
@@ -80,6 +82,22 @@ public class AnnoPage {
 
     public void setTgtId(String tgtId) {
         this.tgtId = tgtId;
+    }
+
+    public String getLang() {
+        return lang;
+    }
+
+    public void setLang(String lang) {
+        this.lang = lang;
+    }
+
+    public Boolean getOrig() {
+        return orig;
+    }
+
+    public void setOrig(Boolean orig) {
+        this.orig = orig;
     }
 
     public List<Annotation> getAns() {
