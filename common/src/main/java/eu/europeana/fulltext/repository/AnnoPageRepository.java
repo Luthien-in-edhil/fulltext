@@ -17,10 +17,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static dev.morphia.aggregation.experimental.expressions.ArrayExpressions.filter;
+import static dev.morphia.aggregation.experimental.expressions.BooleanExpressions.not;
 import static dev.morphia.aggregation.experimental.expressions.Expressions.field;
 import static dev.morphia.aggregation.experimental.expressions.Expressions.value;
-import static dev.morphia.query.experimental.filters.Filters.eq;
-import static dev.morphia.query.experimental.filters.Filters.in;
+import static dev.morphia.query.experimental.filters.Filters.*;
 import static eu.europeana.fulltext.util.MorphiaUtils.Fields.*;
 import static eu.europeana.fulltext.util.MorphiaUtils.MULTI_DELETE_OPTS;
 
@@ -207,27 +207,35 @@ public class AnnoPageRepository {
         );
     }
 
-    public void setLangAndOrigin(String datasetId){
-
-        MorphiaCursor<AnnoPage> addLangAndOrigin = datastore.
-
-        datastore
-                .find(AnnoPage.class)
-                .update(UpdateOperators.set("lang", "Fairmont Chateau Laurier"))
-                .execute(new UpdateOptions()
-                                 .multi(true));
-    }
+//    public void setLangAndOrigin(String datasetId){
+//        MorphiaCursor<AnnoPage> addLangAndOrigin = datastore.
+//        datastore
+//                .find(AnnoPage.class)
+//                .update(UpdateOperators.set("lang", "Fairmont Chateau Laurier"))
+//                .execute(new UpdateOptions()
+//                                 .multi(true));
+//    }
 
     public MorphiaCursor<AnnoPage> findByDatasetNoLang(String datasetId) {
-        Aggregation<AnnoPage> query = datastore.aggregate(AnnoPage.class).match(
+        return datastore.aggregate(AnnoPage.class).match(
                 eq(DATASET_ID, datasetId),
-                filter(Filters.exists("lang"))
-                field("lang").$exists()
-                eq(LOCAL_ID, localId),
-                in(IMAGE_ID, imageIds)
-                                                                               );
-        query = filterTextGranularity(query, annoTypes);
-        return query.execute(AnnoPage.class);
+                exists("lang").not())
+                .execute(AnnoPage.class);
+    }
+
+    public MorphiaCursor<AnnoPage> findByDatasetNoLangOrOrig(String datasetId) {
+        return datastore.aggregate(AnnoPage.class).match(
+                eq(DATASET_ID, datasetId),
+                exists("orig").not(),
+                exists("lang").not())
+                        .execute(AnnoPage.class);
+    }
+
+    public MorphiaCursor<AnnoPage> findByDatasetNoOrig(String datasetId) {
+        return datastore.aggregate(AnnoPage.class).match(
+                eq(DATASET_ID, datasetId),
+                exists("orig").not())
+                        .execute(AnnoPage.class);
     }
 
 

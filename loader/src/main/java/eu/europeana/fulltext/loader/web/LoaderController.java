@@ -1,10 +1,12 @@
 package eu.europeana.fulltext.loader.web;
 
+import eu.europeana.fulltext.loader.exception.DocumentDoesNotExistException;
 import eu.europeana.fulltext.loader.exception.LoaderException;
 import eu.europeana.fulltext.loader.service.LoadArchiveService;
 import eu.europeana.fulltext.loader.service.MongoSaveMode;
 import eu.europeana.fulltext.loader.service.MongoService;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -59,26 +61,39 @@ public class LoaderController {
 
     /**
      * Adds the following fields to the AnnoPage collection (name can be overridden):
-     * - String lang (default ON, switch OFF by adding &lang=false) - initial value fetched from Resource
-     * - Boolean orig (default OFF, switch ON by adding &orig=true) - initial value = true
+     * - String lang (default true, disable by adding &lang=false) Initial value: fetched from linked Resource
+     * - Boolean orig (default false, enable by adding &orig=true). Initial value = true
      * The value of the lang field is initiated with the value of the lang field of the associated Resource document.
      * <p>:-)</p>
      * @param  datasetId (String, required) identifier of the dataset, to break up the batch job in more manageable portions
      * @param  addLang (boolean, required) set to 'false' to suppress creating the lang field
      * @param  addOrig (boolean, required) set to 'true' to enable creating the orig field (set to 'true')
-     * @param  collection (String, optional) name of the collection (defaults to 'AnnoPage')
+     * @param  flushBuffer (Integer, optional) number of AnnoPages to process before saving them to the MongoDB server
+     *                     Default value is 100
+     * @param  collection (String, optional) [NOT IMPLEMENTED YET] name of the collection (defaults to 'AnnoPage')
      * @return string describing processing results
      */
     @GetMapping(value = "/addlangto/{datasetId}", produces = MediaType.TEXT_PLAIN_VALUE)
     public String langfield(@PathVariable(value = "datasetId") String datasetId,
             @RequestParam(value = "addLang", defaultValue = "true") Boolean addLang,
             @RequestParam(value = "addOrig", defaultValue = "false") Boolean addOrig,
-            @RequestParam(value = "collection", required = false) String collection){
+            @RequestParam(value = "flushBuffer", required = false) String flushBuffer,
+            @RequestParam(value = "collection", required = false) String collection) {
 
-        if (StringUtils.isBlank(collection)){
-            return mongoService.addMultiLangFields(datasetId, addLang, addOrig);
-        } else {
-            return mongoService.addMultiLangFields(datasetId, addLang, addOrig, collection);
+        Integer bufferSize = 100;
+        if (NumberUtils.isCreatable(flushBuffer)){
+            bufferSize = NumberUtils.createInteger(flushBuffer);
+        }
+
+        try {
+            if (StringUtils.isBlank(collection)){
+                return mongoService.addMultiLangFields(datasetId, addLang, addOrig, bufferSize, "AnnoPage");
+            } else {
+                return mongoService.addMultiLangFields(datasetId, addLang, addOrig, bufferSize, collection);
+            }
+        } catch (DocumentDoesNotExistException e) {
+            LogManager.getLogger(LoaderController.class).info(e.getMessage());
+            return e.getMessage();
         }
 
     }
