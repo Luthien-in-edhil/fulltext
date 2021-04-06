@@ -66,8 +66,8 @@ public class LoaderController {
      * The value of the lang field is initiated with the value of the lang field of the associated Resource document.
      * <p>:-)</p>
      * @param  datasetId (String, required) identifier of the dataset, to break up the batch job in more manageable portions
-     * @param  addLang (boolean, required) set to 'false' to suppress creating the lang field
-     * @param  addOrig (boolean, required) set to 'true' to enable creating the orig field (set to 'true')
+     * @param  addLang (boolean, optional, default true) set to false to suppress creating the lang field
+     * @param  addOrig (boolean, optional, default true) set to false to suppress creating the orig field
      * @param  flushBuffer (Integer, optional) number of AnnoPages to process before saving them to the MongoDB server
      *                     Default value is 100
      * @param  collection (String, optional) [NOT IMPLEMENTED YET] name of the collection (defaults to 'AnnoPage')
@@ -75,14 +75,19 @@ public class LoaderController {
      */
     @GetMapping(value = "/addlangto/{datasetId}", produces = MediaType.TEXT_PLAIN_VALUE)
     public String langfield(@PathVariable(value = "datasetId") String datasetId,
-            @RequestParam(value = "addLang", defaultValue = "true") Boolean addLang,
-            @RequestParam(value = "addOrig", defaultValue = "false") Boolean addOrig,
-            @RequestParam(value = "flushBuffer", required = false) String flushBuffer,
+            @RequestParam(value = "addLang", required = false, defaultValue = "true") Boolean addLang,
+            @RequestParam(value = "addOrig", required = false, defaultValue = "true") Boolean addOrig,
+            @RequestParam(value = "flushBuffer", required = false, defaultValue = "100") String flushBuffer,
             @RequestParam(value = "collection", required = false) String collection) {
 
         Integer bufferSize = 100;
         if (NumberUtils.isCreatable(flushBuffer)){
             bufferSize = NumberUtils.createInteger(flushBuffer);
+            if (bufferSize < 1){
+                return "flushBuffer should be larger than 1";
+            }
+        } else {
+            return "flushBuffer should have an integer value";
         }
 
         try {

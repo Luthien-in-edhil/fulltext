@@ -49,25 +49,25 @@ public class MongoService {
     public void saveAnnoPageList(List<AnnoPage> apList, MongoSaveMode saveMode) throws LoaderException {
         LOG.debug("Saving {} annoPages...", apList.size());
 
-        long resourceCount = resourceRepository.count();
-        long annoPageCount = annoPageRepository.count();
+//        long resourceCount = resourceRepository.count();
+//        long annoPageCount = annoPageRepository.count();
         if (MongoSaveMode.INSERT.equals(saveMode)) {
             for (AnnoPage annoPage : apList) {
                 saveResource(annoPage.getRes());
                 saveAnnoPage(annoPage);
             }
-            long newResourceCount = resourceRepository.count();
-            long newAnnoPageCount = annoPageRepository.count();
-            if (resourceCount + apList.size() != newResourceCount) {
-                LogFile.OUT.warn("Expected number of resource in database is {}, but actual number is {}",
-                                 resourceCount + apList.size(),
-                                 newResourceCount);
-            }
-            if (annoPageCount + apList.size() != newAnnoPageCount) {
-                LogFile.OUT.warn("Expected number of annotation pages in database is {}, but actual number is {}",
-                                 annoPageCount + apList.size(),
-                                 annoPageCount);
-            }
+//            long newResourceCount = resourceRepository.count();
+//            long newAnnoPageCount = annoPageRepository.count();
+//            if (resourceCount + apList.size() != newResourceCount) {
+//                LogFile.OUT.warn("Expected number of resource in database is {}, but actual number is {}",
+//                                 resourceCount + apList.size(),
+//                                 newResourceCount);
+//            }
+//            if (annoPageCount + apList.size() != newAnnoPageCount) {
+//                LogFile.OUT.warn("Expected number of annotation pages in database is {}, but actual number is {}",
+//                                 annoPageCount + apList.size(),
+//                                 annoPageCount);
+//            }
         }
         LOG.debug("Saving done.");
     }
