@@ -76,7 +76,7 @@ public class LoaderController {
     @GetMapping(value = "/addlangto/{datasetId}", produces = MediaType.TEXT_PLAIN_VALUE)
     public String langfield(@PathVariable(value = "datasetId") String datasetId,
             @RequestParam(value = "addLang", required = false, defaultValue = "true") Boolean addLang,
-            @RequestParam(value = "addOrig", required = false, defaultValue = "true") Boolean addOrig,
+            @RequestParam(value = "addOrig", required = false, defaultValue = "false") Boolean addOrig,
             @RequestParam(value = "flushBuffer", required = false, defaultValue = "100") String flushBuffer,
             @RequestParam(value = "collection", required = false) String collection) {
 

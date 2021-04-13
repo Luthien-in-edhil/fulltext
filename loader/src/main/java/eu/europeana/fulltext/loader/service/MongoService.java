@@ -32,7 +32,7 @@ public class MongoService {
     private static final String LANGFIELD          = "'lang'";
     private static final String ORIGFIELD          = "'orig'";
     private static final String ADDINGLOGMSG       = "Adding {} fields to annoPage {}";
-    private static final String RETURNMSG          = "Finished: added %s to %d documents from dataset %s";
+    private static final String RETURNMSG          = "Finished: added %s to %d documents from dataset %s in %d seconds" ;
 
     @Autowired
     ResourceRepository resourceRepository;
@@ -225,12 +225,13 @@ public class MongoService {
             if (toBeSaved >= bufferSize) {
                 flushToServer(apList);
                 toBeSaved = 0;
+                LOG.info("{} items updated");
             }
         }
         if (toBeSaved > 0) {
             flushToServer(apList);
         }
-        return String.format(RETURNMSG, whatFields, index, datasetId);
+        return String.format(RETURNMSG, whatFields, index, datasetId, (System.currentTimeMillis() - start)/1000);
     }
 
     private void flushToServer(List<AnnoPage> apList) {
