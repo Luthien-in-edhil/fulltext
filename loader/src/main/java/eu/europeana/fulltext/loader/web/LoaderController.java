@@ -66,8 +66,6 @@ public class LoaderController {
      * The value of the lang field is initiated with the value of the lang field of the associated Resource document.
      * <p>:-)</p>
      * @param  datasetId (String, required) identifier of the dataset, to break up the batch job in more manageable portions
-     * @param  addLang (boolean, optional, default true) set to false to suppress creating the lang field
-     * @param  addOrig (boolean, optional, default true) set to false to suppress creating the orig field
      * @param  flushBuffer (Integer, optional) number of AnnoPages to process before saving them to the MongoDB server
      *                     Default value is 100
      * @param  collection (String, optional) [NOT IMPLEMENTED YET] name of the collection (defaults to 'AnnoPage')
@@ -75,10 +73,8 @@ public class LoaderController {
      */
     @GetMapping(value = "/addlangto/{datasetId}", produces = MediaType.TEXT_PLAIN_VALUE)
     public String langfield(@PathVariable(value = "datasetId") String datasetId,
-            @RequestParam(value = "addLang", required = false, defaultValue = "true") Boolean addLang,
-            @RequestParam(value = "addOrig", required = false, defaultValue = "false") Boolean addOrig,
             @RequestParam(value = "flushBuffer", required = false, defaultValue = "100") String flushBuffer,
-            @RequestParam(value = "collection", required = false) String collection) {
+            @RequestParam(value = "collection", required = false, defaultValue="AnnoPage") String collection) {
 
         Integer bufferSize = 100;
         if (NumberUtils.isCreatable(flushBuffer)){
@@ -91,10 +87,10 @@ public class LoaderController {
         }
 
         try {
-            if (StringUtils.isBlank(collection)){
-                return mongoService.addMultiLangFields(datasetId, addLang, addOrig, bufferSize, "AnnoPage");
-            } else {
-                return mongoService.addMultiLangFields(datasetId, addLang, addOrig, bufferSize, collection);
+            if ("ALL".equalsIgnoreCase(datasetId)) {
+                return mongoService.addMultiLangFieldAll(bufferSize, collection);
+            } else{
+                return mongoService.addMultiLangFieldDataset(datasetId, bufferSize, collection);
             }
         } catch (DocumentDoesNotExistException e) {
             LogManager.getLogger(LoaderController.class).info(e.getMessage());

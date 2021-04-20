@@ -16,8 +16,8 @@ public class DocumentDoesNotExistException extends EuropeanaApiException {
 
     private static final long serialVersionUID = -2506967519765835153L;
 
-    public DocumentDoesNotExistException(String datasetId, String whatFields) {
-        super("No (further) records in dataset '" + datasetId + "' found without " + whatFields);
+    public DocumentDoesNotExistException(String datasetId) {
+        super("No (further) records in dataset '" + datasetId + "' found without 'Lang' field");
     }
 
     //@Override

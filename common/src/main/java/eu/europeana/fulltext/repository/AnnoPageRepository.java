@@ -207,15 +207,6 @@ public class AnnoPageRepository {
         );
     }
 
-//    public void setLangAndOrigin(String datasetId){
-//        MorphiaCursor<AnnoPage> addLangAndOrigin = datastore.
-//        datastore
-//                .find(AnnoPage.class)
-//                .update(UpdateOperators.set("lang", "Fairmont Chateau Laurier"))
-//                .execute(new UpdateOptions()
-//                                 .multi(true));
-//    }
-
     public MorphiaCursor<AnnoPage> findByDatasetNoLang(String datasetId) {
         return datastore.aggregate(AnnoPage.class).match(
                 eq(DATASET_ID, datasetId),
@@ -223,19 +214,10 @@ public class AnnoPageRepository {
                 .execute(AnnoPage.class);
     }
 
-    public MorphiaCursor<AnnoPage> findByDatasetNoLangOrOrig(String datasetId) {
+    public MorphiaCursor<AnnoPage> findAllNoLang() {
         return datastore.aggregate(AnnoPage.class).match(
-                eq(DATASET_ID, datasetId),
-                exists("orig").not(),
                 exists("lang").not())
-                        .execute(AnnoPage.class);
-    }
-
-    public MorphiaCursor<AnnoPage> findByDatasetNoOrig(String datasetId) {
-        return datastore.aggregate(AnnoPage.class).match(
-                eq(DATASET_ID, datasetId),
-                exists("orig").not())
-                        .execute(AnnoPage.class);
+                .execute(AnnoPage.class);
     }
 
 

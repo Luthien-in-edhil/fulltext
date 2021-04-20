@@ -5,17 +5,14 @@ import eu.europeana.fulltext.entity.AnnoPage;
 import eu.europeana.fulltext.entity.Resource;
 import eu.europeana.fulltext.loader.config.LoaderSettings;
 import eu.europeana.fulltext.loader.exception.DocumentDoesNotExistException;
+import eu.europeana.fulltext.loader.exception.LoaderException;
 import eu.europeana.fulltext.repository.AnnoPageRepository;
 import eu.europeana.fulltext.repository.ResourceRepository;
-import eu.europeana.fulltext.loader.exception.LoaderException;
-import eu.europeana.fulltext.search.exception.RecordDoesNotExistException;
-import eu.europeana.fulltext.search.model.query.SolrHit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.Document;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,10 +26,8 @@ public class MongoService {
     private static final Logger LOG                = LogManager.getLogger(MongoService.class);
     private static final String NOMONGORESULTS     = "No results from Mongo";
     private static final String RETRIEVEDANNOPAGES = "Retrieved AnnoPages for {} in {} ms";
-    private static final String LANGFIELD          = "'lang'";
-    private static final String ORIGFIELD          = "'orig'";
-    private static final String ADDINGLOGMSG       = "Adding {} fields to annoPage {}";
-    private static final String RETURNMSG          = "Finished: added %s to %d documents from dataset %s in %d seconds" ;
+    private static final String ADDINGLOGMSG       = "Adding 'lang' field to annoPage {}";
+    private static final String RETURNMSG          = "Finished: added 'lang' field to %d documents from dataset %s in %d seconds" ;
 
     @Autowired
     ResourceRepository resourceRepository;
@@ -145,63 +140,35 @@ public class MongoService {
 
 
     /**
-     * Adds the following fields to the AnnoPage collection
-     * - String lang: initial value fetched from linked Resource
-     * - Boolean orig: initial value = true
-     * The value of the lang field is initiated with the value of the lang field of the associated Resource document.
+     * Adds the 'lang' fields to the AnnoPage collection with value fetched from the Linked Resource
      * <p>:-)</p>
      *
      * @param datasetId  (String) identifier of the dataset, to break up the batch job in more manageable portions
-     * @param addLang    (boolean) whether or not to add the lang field
-     * @param addOrig    (boolean) whether or not to add the orig field
      * @param bufferSize (Integer) number of AnnoPages to process before saving them to the MongoDB server
      * @param collection (String) [NOT IMPLEMENTED YET] name of the collection
      * @return String describing processing results
-     * @throws DocumentDoesNotExistException when no documents were found that qualify for processing
      */
-    public String addMultiLangFields(
-            String datasetId, Boolean addLang, Boolean addOrig, Integer bufferSize, String collection) throws
-                                                                                                       DocumentDoesNotExistException {
-        if (addLang && addOrig) {
-            return iterateCursor(annoPageRepository.findByDatasetNoLangOrOrig(datasetId),
-                                 bufferSize,
-                                 datasetId,
-                                 LANGFIELD + " and " + ORIGFIELD,
-                                 true,
-                                 true,
-                                 System.currentTimeMillis());
-        } else if (addOrig) {
-            return iterateCursor(annoPageRepository.findByDatasetNoOrig(datasetId),
-                                 bufferSize,
-                                 datasetId,
-                                 ORIGFIELD,
-                                 false,
-                                 true,
-                                 System.currentTimeMillis());
-        } else if (addLang) {
-            return iterateCursor(annoPageRepository.findByDatasetNoLang(datasetId),
-                                 bufferSize,
-                                 datasetId,
-                                 LANGFIELD,
-                                 true,
-                                 false,
-                                 System.currentTimeMillis());
-        }
-        return "No candidate AnnoPages were found";
+    public String addMultiLangFieldDataset(
+        String datasetId, Integer bufferSize, String collection) throws DocumentDoesNotExistException {
+        return iterateCursor(annoPageRepository.findByDatasetNoLang(datasetId),
+                             bufferSize,
+                             datasetId,
+                             System.currentTimeMillis());
+    }
+
+    public String addMultiLangFieldAll(Integer bufferSize, String collection) throws DocumentDoesNotExistException {
+        return iterateCursor(annoPageRepository.findAllNoLang(), bufferSize, "ALL", System.currentTimeMillis());
     }
 
     private String iterateCursor(
             MorphiaCursor<AnnoPage> annoPageCursor,
             Integer bufferSize,
             String datasetId,
-            String whatFields,
-            boolean addLang,
-            boolean addOrig,
             long start) throws DocumentDoesNotExistException {
 
         if (annoPageCursor == null || !annoPageCursor.hasNext()) {
             LOG.debug(NOMONGORESULTS);
-            throw new DocumentDoesNotExistException(datasetId, whatFields);
+            throw new DocumentDoesNotExistException(datasetId);
         } else {
             LOG.debug(RETRIEVEDANNOPAGES, datasetId, System.currentTimeMillis() - start);
         }
@@ -212,26 +179,23 @@ public class MongoService {
 
         while (annoPageCursor.hasNext()) {
             AnnoPage annoPage = annoPageCursor.next();
-            LOG.debug(ADDINGLOGMSG, whatFields, annoPage);
-            if (addLang) {
-                annoPage.setLang(annoPage.getRes().getLang());
-            }
-            if (addOrig) {
-                annoPage.setOrig(true);
-            }
+            LOG.debug(ADDINGLOGMSG, annoPage);
+            annoPage.setLang(annoPage.getRes().getLang());
             apList.add(annoPage);
             toBeSaved++;
             index++;
             if (toBeSaved >= bufferSize) {
                 flushToServer(apList);
                 toBeSaved = 0;
-                LOG.info("{} items updated");
+                LOG.info("{} items updated", index);
             }
         }
         if (toBeSaved > 0) {
             flushToServer(apList);
         }
-        return String.format(RETURNMSG, whatFields, index, datasetId, (System.currentTimeMillis() - start)/1000);
+        String msg = String.format(RETURNMSG, index, datasetId, (System.currentTimeMillis() - start)/1000);
+        LOG.info(msg);
+        return msg;
     }
 
     private void flushToServer(List<AnnoPage> apList) {
