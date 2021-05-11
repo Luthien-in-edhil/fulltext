@@ -1,15 +1,13 @@
 package eu.europeana.fulltext.repository;
 
-import com.mongodb.client.model.Filters;
 import dev.morphia.Datastore;
-import dev.morphia.UpdateOptions;
 import dev.morphia.aggregation.experimental.Aggregation;
 import dev.morphia.aggregation.experimental.expressions.ArrayExpressions;
 import dev.morphia.aggregation.experimental.stages.Projection;
-import dev.morphia.query.experimental.updates.UpdateOperators;
 import dev.morphia.query.internal.MorphiaCursor;
 import eu.europeana.fulltext.AnnotationType;
 import eu.europeana.fulltext.entity.AnnoPage;
+import org.apache.logging.log4j.LogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -17,7 +15,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static dev.morphia.aggregation.experimental.expressions.ArrayExpressions.filter;
-import static dev.morphia.aggregation.experimental.expressions.BooleanExpressions.not;
 import static dev.morphia.aggregation.experimental.expressions.Expressions.field;
 import static dev.morphia.aggregation.experimental.expressions.Expressions.value;
 import static dev.morphia.query.experimental.filters.Filters.*;
@@ -171,7 +168,14 @@ public class AnnoPageRepository {
 
     // TODO move this to the loader?
     public void save(AnnoPage apToSave){
-        datastore.save(apToSave);
+        try {
+            datastore.save(apToSave);
+        } catch (RuntimeException e) {
+            LogManager.getLogger(AnnoPageRepository.class).error("Error saving AnnoPage object /{}/{}/annopage/{}",
+                    apToSave.getDsId(), apToSave.getLcId(), apToSave.getPgId());
+            LogManager.getLogger(AnnoPageRepository.class).error("  Number of annotations = {}", apToSave.getAns().size());
+            throw e;
+        }
     }
 
 
