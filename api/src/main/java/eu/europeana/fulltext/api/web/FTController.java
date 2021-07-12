@@ -75,9 +75,24 @@ public class FTController {
     @GetMapping(value = "/{datasetId}/{localId}/annopage", headers = ACCEPT_JSON)
     public ResponseEntity<String> annoPageInfo(
             @PathVariable String datasetId,
-            @PathVariable String localId) throws EuropeanaApiException {
+            @PathVariable String localId,
+            HttpServletRequest request) throws EuropeanaApiException {
+       return getAnnoPageInfo(datasetId, localId, request);
+    }
+
+    private ResponseEntity<String> getAnnoPageInfo(String datasetId, String localId, HttpServletRequest request) throws EuropeanaApiException {
         SummaryManifest apInfo = fts.collectAnnoPageInfo(datasetId, localId);
-        return new ResponseEntity<>(fts.serialise(apInfo), HttpStatus.OK);
+        ZonedDateTime modified = CacheUtils.dateToZonedUTC(apInfo.getModified());
+        String eTag = generateETag(datasetId + localId ,
+                 modified,
+                fts.getSettings().getAppVersion(),
+                true);
+        ResponseEntity<String> cached = CacheUtils.checkCached(request, modified, eTag);
+        if (null != cached) {
+            return cached;
+        }
+        HttpHeaders headers = CacheUtils.generateHeaders(request, eTag, CacheUtils.zonedDateTimeToString(modified));
+        return new ResponseEntity<>(fts.serialise(apInfo), headers, HttpStatus.OK);
     }
 
     /**
@@ -154,7 +169,6 @@ public class FTController {
 
         List<AnnotationType> textGranValues = ControllerUtils.validateTextGranularity(textGranularity,
                                                                                       ALLOWED_ANNOTATION_TYPES);
-
         AnnoPage      annoPage = fts.fetchAnnoPage(datasetId, localId, pageId, textGranValues, lang);
         ZonedDateTime modified = CacheUtils.dateToZonedUTC(annoPage.getModified());
         String eTag = generateETag(datasetId + localId + pageId,

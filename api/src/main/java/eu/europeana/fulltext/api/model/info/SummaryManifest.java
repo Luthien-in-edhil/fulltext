@@ -5,9 +5,12 @@ package eu.europeana.fulltext.api.model.info;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 
 import static eu.europeana.fulltext.api.config.FTDefinitions.*;
 
@@ -30,6 +33,9 @@ public class SummaryManifest implements Serializable {
     @JsonProperty("items")
     private List<SummaryCanvas> canvases;
 
+    @JsonIgnore
+    private Date            modified;
+
     /**
      * This is a container object to group "fake" SummaryCanvas objects containing original and translated AnnoPages
      * for a given Fulltext record / object
@@ -41,6 +47,7 @@ public class SummaryManifest implements Serializable {
         this.dataSetId = dataSetId;
         this.localId = localId;
         canvases = new ArrayList<>();
+        modified = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
     }
 
     public String getDataSetId() {
@@ -78,5 +85,13 @@ public class SummaryManifest implements Serializable {
 
     public String[] getContext() {
         return context;
+    }
+
+    public Date getModified() {
+        return (Date) modified.clone();
+    }
+
+    public void setModified(Date modified) {
+        this.modified = (Date) modified.clone();
     }
 }

@@ -183,6 +183,8 @@ public class FTService {
             for (TranslationAnnoPage tap : annoPageRepository.findTranslatedPages(datasetId, localId, ap.getPgId())) {
                 summaryCanvas.addAnnotation(new SummaryAnnoPage(makeLangAwareAnnoPageID(tap), tap.getLang()));
             }
+            // modified value of last Anno Page will be added in the SummaryManifest
+            apInfoSummaryManifest.setModified(ap.getModified());
             // add SummaryCanvas to SummaryManifest
             apInfoSummaryManifest.addCanvas(summaryCanvas);
         }
