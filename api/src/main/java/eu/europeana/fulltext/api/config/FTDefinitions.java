@@ -16,10 +16,10 @@ public final class FTDefinitions {
     public static final  String UTF_8                     = "charset=UTF-8";
 
     public static final String ANNOPAGE_PATH             = "/annopage";
-    public static final String ANNOTATION_PATH           = "/";
+    public static final char ANNOTATION_PATH             = '/';
     public static final String CANVAS_PATH               = "/canvas";
     public static final String LANGUAGE_PARAM            = "lang=";
-    private static final String PROFILE_IS                = ";profile=\"";
+    private static final String PROFILE_IS               = ";profile=\"";
 
     /**
      * Media type for IIIF version 2

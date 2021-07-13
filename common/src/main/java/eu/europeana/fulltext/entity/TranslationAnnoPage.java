@@ -8,6 +8,7 @@ import dev.morphia.annotations.*;
  */
 @Entity(value = "TranslationAnnoPage", useDiscriminator = false)
 @Indexes(@Index(fields = { @Field("dsId"), @Field("lcId"), @Field("pgId"), @Field("lang") }, options = @IndexOptions(unique = true)))
+@SuppressWarnings("fb-contrib:FCBL_FIELD_COULD_BE_LOCAL")
 public class TranslationAnnoPage extends AnnoPage {
 
     @Reference

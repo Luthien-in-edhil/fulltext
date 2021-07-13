@@ -196,12 +196,12 @@ public class FTService {
         StringBuilder result = new StringBuilder(100);
         result.append(ftSettings.getAnnoPageBaseUrl())
                 .append(ap.getDsId())
-                .append("/")
+                .append('/')
                 .append(ap.getLcId())
                 .append(FTDefinitions.ANNOPAGE_PATH)
-                .append("/")
+                .append('/')
                 .append(ap.getPgId())
-                .append("?")
+                .append('?')
                 .append(FTDefinitions.LANGUAGE_PARAM)
                 .append(ap.getLang());
         return result.toString();
